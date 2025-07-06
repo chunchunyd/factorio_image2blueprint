@@ -1,0 +1,23 @@
+{
+  "name": "factorio_image2blueprint",
+  "version": "1.0.0",
+  "description": "Convert images to blueprint in Factorio",
+  "keywords": [
+    "factorio"
+  ],
+  "homepage": "https://github.com/chunchunyd/factorio_image2blueprint#readme",
+  "bugs": {
+    "url": "https://github.com/chunchunyd/factorio_image2blueprint/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/chunchunyd/factorio_image2blueprint.git"
+  },
+  "license": "ISC",
+  "author": "chunchunyd",
+  "type": "commonjs",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"114514\""
+  }
+}
