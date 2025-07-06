@@ -18,6 +18,34 @@
   "type": "commonjs",
   "main": "main.js",
   "scripts": {
+    "dist": "electron-builder --win portable",
+    "start": "electron .",
     "test": "echo \"114514\""
+  },
+  "devDependencies": {
+    "electron": "^37.2.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.example.factorio-image2blueprint",
+    "productName": "Factorio Image2Blueprint",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "**/*",
+      "!node_modules",
+      "!.git"
+    ],
+    "win": {
+      "target": "portable",
+      "icon": "icon.ico"
+    },
+    "extraResources": [
+      {
+        "from": "./main.exe",
+        "to": "./"
+      }
+    ]
   }
 }

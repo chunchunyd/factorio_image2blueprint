@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Factorio 图片转蓝图工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a1f29 0%, #0d1117 100%);
+            color: #ecf0f1;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 自定义标题栏 */
+        .title-bar {
+            -webkit-app-region: drag;
+            height: 40px;
+            background: rgba(44, 62, 80, 0.9);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            border-bottom: 1px solid rgba(52, 152, 219, 0.3);
+            position: relative;
+            z-index: 10;
+        }
+
+        .title-text {
+            font-size: 16px;
+            font-weight: 600;
+            color: #3498db;
+        }
+
+        .window-controls {
+            -webkit-app-region: no-drag;
+            display: flex;
+            gap: 12px;
+        }
+
+        .window-controls button {
+            background: none;
+            border: none;
+            color: #bdc3c7;
+            font-size: 18px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .window-controls button:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .window-controls .close:hover {
+            background: #e74c3c;
+            color: white;
+        }
+
+        /* 主容器 */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            height: calc(100vh - 40px);
+            overflow-y: auto;
+        }
+
+        /* 头部样式 */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(44, 62, 80, 0.7);
+            border-radius: 10px;
+            border: 1px solid rgba(52, 152, 219, 0.3);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #3498db;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+            text-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+        }
+
+        .subtitle {
+            color: #95a5a6;
+            font-size: 1.1rem;
+        }
+
+        .app-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #3498db;
+        }
+
+        /* 卡片样式 */
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: rgba(44, 62, 80, 0.7);
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(52, 152, 219, 0.3);
+        }
+
+        .card-title {
+            color: #3498db;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(52, 152, 219, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+        }
+
+        /* 表单样式 */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #bdc3c7;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .input-group input {
+            flex: 1;
+        }
+
+        input,
+        select,
+        button,
+        textarea {
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid #34495e;
+            background: rgba(25, 35, 45, 0.8);
+            color: #ecf0f1;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.3);
+        }
+
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: #7f8c8d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-success {
+            background: #27ae60;
+        }
+
+        .btn-success:hover {
+            background: #219653;
+        }
+
+        .btn-warning {
+            background: #f39c12;
+        }
+
+        .btn-warning:hover {
+            background: #e67e22;
+        }
+
+        .btn-icon {
+            padding: 10px 15px;
+        }
+
+        /* 图片预览 */
+        .preview-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .preview-box {
+            width: 100%;
+            height: 250px;
+            border: 2px dashed #34495e;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: rgba(25, 35, 45, 0.6);
+        }
+
+        .preview-box img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        /* 蓝图输出 */
+        .blueprint-output {
+            position: relative;
+        }
+
+        textarea {
+            width: 100%;
+            height: 60px;
+            padding: 15px;
+            border-radius: 10px;
+            background: rgba(25, 35, 45, 0.8);
+            border: 1px solid #34495e;
+            color: #ecf0f1;
+            font-family: monospace;
+            font-size: 0.9rem;
+            resize: vertical;
+            margin-bottom: 15px;
+        }
+
+        .copy-btn-container {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        /* 提示信息 */
+        .info-text {
+            font-size: 0.9rem;
+            color: #95a5a6;
+            margin-top: 8px;
+            font-style: italic;
+        }
+
+        .warning {
+            color: #f39c12;
+            font-weight: 600;
+        }
+
+        /* 状态信息 */
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+            font-weight: 600;
+            display: none;
+        }
+
+        .status.success {
+            background: rgba(39, 174, 96, 0.2);
+            border: 1px solid #27ae60;
+            color: #27ae60;
+            display: block;
+        }
+
+        .status.error {
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid #e74c3c;
+            color: #e74c3c;
+            display: block;
+        }
+
+        .status.processing {
+            background: rgba(243, 156, 18, 0.2);
+            border: 1px solid #f39c12;
+            color: #f39c12;
+            display: block;
+        }
+
+        /* 页脚 */
+        .footer {
+            text-align: center;
+            margin-top: 10px;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            padding: 5px;
+            border-top: 1px solid #34495e;
+        }
+
+        /* 响应式布局 */
+        @media (max-width: 900px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <!-- 自定义标题栏 -->
+    <div class="title-bar">
+        <div class="title-text">
+            Factorio 图片转蓝图工具
+        </div>
+        <div class="window-controls">
+            <button class="minimize"><i class="fas fa-window-minimize"></i></button>
+            <button class="close"><i class="fas fa-times"></i></button>
+        </div>
+    </div>
+
+    <!-- 主内容区域 -->
+    <div class="container">
+
+        <div class="grid">
+            <div class="card">
+                <h2 class="card-title"><i class="fas fa-image"></i> 图片设置</h2>
+
+                <div class="form-group">
+                    <label for="imagePath">选择图片文件</label>
+                    <div class="input-group">
+                        <input type="text" id="imagePath" placeholder="请选择图片文件" readonly>
+                        <button id="browseBtn"><i class="fas fa-folder-open"></i> 浏览</button>
+                    </div>
+                </div>
+
+                <div class="preview-container">
+                    <div class="preview-box" id="previewBox">
+                        <img id="imagePreview" src="">
+                        <div id="previewPlaceholder">
+                            <i class="fas fa-image"></i>
+                            <p>请先选择图片文件</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="width">目标尺寸（像素）</label>
+                    <div class="input-group">
+                        <input type="number" id="width" placeholder="宽度" min="1" max="99999">
+                        <span style="display: flex; align-items: center;">×</span>
+                        <input type="number" id="height" placeholder="高度" min="1" max="99999">
+                        <label style="margin-left: 10px; display: flex; align-items: center;">
+                            <input type="checkbox" id="keepAspectRatio" checked>
+                             保持比例
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2 class="card-title"><i class="fas fa-cog"></i> 蓝图设置</h2>
+
+                <div class="form-group">
+                    <label for="title">蓝图标题</label>
+                    <input type="text" id="title" placeholder="输入蓝图标题" value="图片">
+                </div>
+
+                <div class="form-group">
+                    <label for="description">蓝图描述</label>
+                    <input type="text" id="description" placeholder="输入蓝图描述" value="一张图片">
+                </div>
+
+                <div class="form-group">
+                    <label for="floorType">地板类型</label>
+                    <select id="floorType">
+                        <option value="nothing">无地板(Nothing)</option>
+                        <option value="space-platform-foundation" selected>太空平台(Space Platform)</option>
+                        <option value="F077ET-stone-path">通电石砖(Electric Stone Path)</option>
+                        <option value="F077ET-concrete">通电混凝土(Electric Concrete)</option>
+                        <option value="F077ET-refined-concrete">通电钢混(Electric Refined Concrete)</option>
+                    </select>
+                    <p class="info-text warning">需要 "Electric Tiles" Mod(为地板通电)；否则建议在太空平台使用</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="outputPath">保存蓝图 (可选)</label>
+                    <div class="input-group">
+                        <input type="text" id="outputPath" placeholder="选择保存位置" readonly>
+                        <button id="savePathBtn" class="btn-icon"><i class="fas fa-save"></i></button>
+                    </div>
+                </div>
+
+                <button id="convertBtn" class="btn-success" style="width: 100%; padding: 15px;">
+                    <i class="fas fa-bolt"></i> 生成蓝图
+                </button>
+            </div>
+        </div>
+
+        <div class="card blueprint-output">
+            <h2 class="card-title"><i class="fas fa-clipboard"></i> 蓝图输出</h2>
+
+            <textarea id="blueprintOutput" placeholder="蓝图字符串将在这里显示..." readonly></textarea>
+
+            <div class="copy-btn-container">
+                <button id="copyBtn" class="btn-warning">
+                    <i class="fas fa-copy"></i> 复制到剪贴板
+                </button>
+            </div>
+
+            <div class="status" id="statusMessage"></div>
+        </div>
+
+        <div class="footer">
+            <p>By chunchunyd</p>
+        </div>
+    </div>
+
+    <script src="renderer.js"></script>
+</body>
+
+</html>
