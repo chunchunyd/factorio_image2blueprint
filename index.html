@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Factorio 图片转蓝图工具</title>
+    <title>Factorio 媒体转蓝图工具</title>
     <style>
         * {
             margin: 0;
@@ -229,39 +229,11 @@
             padding: 10px 15px;
         }
 
-        /* 图片预览 */
-        .preview-container {
-            display: flex;
-            justify-content: center;
-            margin: 20px 0;
-        }
-
-        .preview-box {
-            width: 100%;
-            height: 250px;
-            border: 2px dashed #34495e;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            background: rgba(25, 35, 45, 0.6);
-        }
-
-        .preview-box img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-        }
-
         /* 蓝图输出 */
-        .blueprint-output {
-            position: relative;
-        }
-
-        textarea {
+        .blueprint-output textarea {
             width: 100%;
-            height: 60px;
+            height: 200px;
+            /* 增加高度 */
             padding: 15px;
             border-radius: 10px;
             background: rgba(25, 35, 45, 0.8);
@@ -270,35 +242,34 @@
             font-family: monospace;
             font-size: 0.9rem;
             resize: vertical;
-            margin-bottom: 15px;
         }
 
-        .copy-btn-container {
+        /* 输出底部布局 */
+        .output-footer {
             display: flex;
-            justify-content: flex-end;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            gap: 15px;
+            /* 添加间距 */
         }
 
-        /* 提示信息 */
-        .info-text {
-            font-size: 0.9rem;
-            color: #95a5a6;
-            margin-top: 8px;
-            font-style: italic;
+        /* 状态容器 - 固定宽度 */
+        .status-container {
+            flex: 1;
+            min-width: 0;
+            /* 允许文本溢出 */
         }
 
-        .warning {
-            color: #f39c12;
-            font-weight: 600;
-        }
-
-        /* 状态信息 */
         .status {
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 20px;
-            text-align: center;
+            padding: 10px 15px;
+            border-radius: 8px;
+            text-align: left;
             font-weight: 600;
             display: none;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .status.success {
@@ -322,6 +293,34 @@
             display: block;
         }
 
+        .file-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* 复制按钮固定宽度 */
+        #copyBtn {
+            padding: 10px 15px;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+            /* 防止收缩 */
+            min-width: 120px;
+            /* 设置最小宽度 */
+        }
+
+        /* 提示信息 */
+        .info-text {
+            font-size: 0.9rem;
+            color: #95a5a6;
+            margin-top: 8px;
+            font-style: italic;
+        }
+
+        .warning {
+            color: #f39c12;
+            font-weight: 600;
+        }
+
         /* 页脚 */
         .footer {
             text-align: center;
@@ -337,6 +336,16 @@
             .grid {
                 grid-template-columns: 1fr;
             }
+
+            .output-footer {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .status {
+                margin-right: 0;
+                margin-bottom: 10px;
+            }
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -346,7 +355,7 @@
     <!-- 自定义标题栏 -->
     <div class="title-bar">
         <div class="title-text">
-            Factorio 图片转蓝图工具
+            Factorio 媒体转蓝图工具
         </div>
         <div class="window-controls">
             <button class="minimize"><i class="fas fa-window-minimize"></i></button>
@@ -359,24 +368,15 @@
 
         <div class="grid">
             <div class="card">
-                <h2 class="card-title"><i class="fas fa-image"></i> 图片设置</h2>
+                <h2 class="card-title"><i class="fas fa-file-video"></i> 媒体文件设置</h2>
 
                 <div class="form-group">
-                    <label for="imagePath">选择图片文件</label>
+                    <label for="mediaPath">选择媒体文件</label>
                     <div class="input-group">
-                        <input type="text" id="imagePath" placeholder="请选择图片文件" readonly>
+                        <input type="text" id="mediaPath" placeholder="请选择图片或视频文件" readonly>
                         <button id="browseBtn"><i class="fas fa-folder-open"></i> 浏览</button>
                     </div>
-                </div>
-
-                <div class="preview-container">
-                    <div class="preview-box" id="previewBox">
-                        <img id="imagePreview" src="">
-                        <div id="previewPlaceholder">
-                            <i class="fas fa-image"></i>
-                            <p>请先选择图片文件</p>
-                        </div>
-                    </div>
+                    <div id="mediaInfo" class="info-text"></div>
                 </div>
 
                 <div class="form-group">
@@ -387,8 +387,22 @@
                         <input type="number" id="height" placeholder="高度" min="1" max="99999">
                         <label style="margin-left: 10px; display: flex; align-items: center;">
                             <input type="checkbox" id="keepAspectRatio" checked>
-                             保持比例
+                            保持比例
                         </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="skipFps">帧率压缩比</label>
+                    <input type="number" id="skipFps" placeholder="跳过帧数" min="1" max="100" value="1">
+                    <p class="info-text">例如: 设置为2时每2帧处理1帧</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="outputPath">保存蓝图位置</label>
+                    <div class="input-group">
+                        <input type="text" id="outputPath" placeholder="选择保存位置" readonly>
+                        <button id="savePathBtn" class="btn-icon"><i class="fas fa-save"></i></button>
                     </div>
                 </div>
             </div>
@@ -398,32 +412,26 @@
 
                 <div class="form-group">
                     <label for="title">蓝图标题</label>
-                    <input type="text" id="title" placeholder="输入蓝图标题" value="图片">
+                    <input type="text" id="title" placeholder="输入蓝图标题" value="视频">
                 </div>
 
                 <div class="form-group">
                     <label for="description">蓝图描述</label>
-                    <input type="text" id="description" placeholder="输入蓝图描述" value="一张图片">
+                    <input type="text" id="description" placeholder="输入蓝图描述" value="一个视频">
                 </div>
 
                 <div class="form-group">
-                    <label for="floorType">地板类型</label>
-                    <select id="floorType">
-                        <option value="nothing">无地板(Nothing)</option>
+                    <label for="electricSet">电路类型</label>
+                    <select id="electricSet">
+                        <option value="nothing">无电路(Nothing)</option>
                         <option value="space-platform-foundation" selected>太空平台(Space Platform)</option>
                         <option value="F077ET-stone-path">通电石砖(Electric Stone Path)</option>
                         <option value="F077ET-concrete">通电混凝土(Electric Concrete)</option>
                         <option value="F077ET-refined-concrete">通电钢混(Electric Refined Concrete)</option>
+                        <option value="substation1">广域配电站(Substation)(todo)</option>
+                        <option value="substation5">传说广域配电站(Legendary Substation)(todo)</option>
                     </select>
-                    <p class="info-text warning">需要 "Electric Tiles" Mod(为地板通电)；否则建议在太空平台使用</p>
-                </div>
-
-                <div class="form-group">
-                    <label for="outputPath">保存蓝图 (可选)</label>
-                    <div class="input-group">
-                        <input type="text" id="outputPath" placeholder="选择保存位置" readonly>
-                        <button id="savePathBtn" class="btn-icon"><i class="fas fa-save"></i></button>
-                    </div>
+                    <p class="info-text warning">需要 "Electric Tiles" Mod；否则建议在太空平台使用</p>
                 </div>
 
                 <button id="convertBtn" class="btn-success" style="width: 100%; padding: 15px;">
@@ -433,17 +441,26 @@
         </div>
 
         <div class="card blueprint-output">
-            <h2 class="card-title"><i class="fas fa-clipboard"></i> 蓝图输出</h2>
+            <h2 class="card-title"><i class="fas fa-clipboard"></i> 处理进度与蓝图输出</h2>
 
-            <textarea id="blueprintOutput" placeholder="蓝图字符串将在这里显示..." readonly></textarea>
+            <textarea id="blueprintOutput" placeholder="处理进度和蓝图字符串将在这里显示..." readonly></textarea>
 
-            <div class="copy-btn-container">
-                <button id="copyBtn" class="btn-warning">
-                    <i class="fas fa-copy"></i> 复制到剪贴板
-                </button>
+            <div class="output-footer">
+                <div class="status-container">
+                    <div class="status" id="statusMessage"></div>
+                </div>
+                <div class="file-actions">
+                    <button id="copyBtn" class="btn-warning">
+                        <i class="fas fa-copy"></i> 复制
+                    </button>
+                    <button id="openFileBtn" class="btn-warning" style="display:none;">
+                        <i class="fas fa-file"></i> 打开文件
+                    </button>
+                    <button id="openFolderBtn" class="btn-warning">
+                        <i class="fas fa-folder-open"></i> 打开文件夹
+                    </button>
+                </div>
             </div>
-
-            <div class="status" id="statusMessage"></div>
         </div>
 
         <div class="footer">
