@@ -7,6 +7,7 @@ const fs = require('fs');
 
 let mainWindow;
 
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1000,
@@ -100,6 +101,13 @@ async function executeBlueprintGenerator(params) {
       return;
     }
 
+    let resourcesPath;
+    if (app.isPackaged) {
+      resourcesPath = process.resourcesPath;
+    } else {
+      resourcesPath = __dirname;
+    }
+
     const args = [
       mediaPath,
       '--output', outputPath,
@@ -107,7 +115,8 @@ async function executeBlueprintGenerator(params) {
       '--description', description,
       '--electric-set', electricSet,
       '--size', width, height,
-      '--skip-fps', skipFps.toString()
+      '--skip-fps', skipFps.toString(),
+      '--resources-dir', resourcesPath
     ];
 
     let executablePath;
@@ -143,7 +152,7 @@ async function executeBlueprintGenerator(params) {
       try {
         const stats = fs.statSync(outputPath);
         const fileSizeByte = stats.size;
-        
+
         resolve({
           success: true,
           outputPath: outputPath,
@@ -176,9 +185,9 @@ app.on('window-all-closed', () => {
 ipcMain.handle('open-file-dialog', async () => {
   const result = await dialog.showOpenDialog({
     properties: ['openFile'],
-    filters: [{ 
-      name: '媒体文件', 
-      extensions: ['jpg', 'png', 'gif', 'jpeg', 'mp4', 'avi', 'mov', 'mkv'] 
+    filters: [{
+      name: '媒体文件',
+      extensions: ['jpg', 'png', 'gif', 'jpeg', 'mp4', 'avi', 'mov', 'mkv']
     }]
   });
   return result;
@@ -227,7 +236,7 @@ ipcMain.handle('generate-blueprint', async (event, params) => {
 //   const listener = (event, data) => {
 //     event.sender.send('progress-update', data);
 //   };
-  
+
 //   progressListeners.set(listenerId, listener);
 //   ipcMain.on('progress-update', listener);
 // });

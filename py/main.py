@@ -5,6 +5,7 @@ import base64
 import zlib
 from PIL import Image, ImageFilter, ImageOps
 import argparse
+import os
 
 # 供电方法
 ELECTRIC_SET = [
@@ -16,6 +17,7 @@ ELECTRIC_SET = [
     "substation1",
     "substation5",
 ]
+
 
 
 def get_image_info(image_path: str) -> tuple[int, int]:
@@ -446,7 +448,7 @@ class Frames2Blueprint:
         self.delta_timetick = 60 / self.fps
 
     def init_signals(self, timer_signal: dict):
-        raw_signal_path = "raw_signals.json"
+        raw_signal_path = os.path.join(resources_directory, 'raw_signals.json')
 
         with open(raw_signal_path, "r") as f:
             raw_signals = json.load(f)
@@ -711,6 +713,7 @@ def main():
     parser.add_argument("--skip-fps", type=int, default=1, help="Skip x frames before loading one.")
     parser.add_argument("--get-info", action="store_true", help="Only get video/image info.")
     parser.add_argument("--store-origin", action="store_true", help="Store original blueprint.")
+    parser.add_argument("--resources-dir", type=str, default=".", help="Directory to store resources.")
     args = parser.parse_args()
 
     input_path: str = args.input
@@ -722,6 +725,8 @@ def main():
     skip_fps: int = args.skip_fps
     get_info: bool = args.get_info
     store_origin: bool = args.store_origin
+    global resources_directory 
+    resources_directory = args.resources_dir
 
     # cv2支持的视频后缀
     video_suffixes = [".mp4", ".avi", ".mov", ".mkv", ".flv", ".wmv", ".webm"] + [".gif"]
